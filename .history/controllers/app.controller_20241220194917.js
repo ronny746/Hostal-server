@@ -8,7 +8,7 @@ exports.getAppDetails = async (req, res) => {
                 email: "rana@example.com",
                 website: "https://yourwebsite.com"
             },
-            releaseDate: "2025-01-01",
+            releaseDate: "2025-01-07",
             description: "all essential features for bookings, hostels, and user management."
         };
 
