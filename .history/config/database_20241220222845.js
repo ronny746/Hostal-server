@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-    try {
-        await mongoose.connect('mongodb+srv://hostal:CazvKvGIwXd2o8G9@cluster0.lorer.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+    try {mongodb+srv://hostal:Espyropassword@espyrotestingdb.ywqfu.mongodb.net/?retryWrites=true&w=majority&appName=Espyrotestingdb
+        await mongoose.connect('mongodb+srv://hostal:CazvKvGIwXd2o8G9@cluster0.lorer.mongodb.net/?retryWrites=true&w=majority', {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
