@@ -16,7 +16,7 @@ app.use('/api/bookings', require('./routes/booking.routes')); // Booking routes
 app.use('/api/contact', require('./routes/contact.routes')); // Contact Us routes
 app.use('/api/app', require('./routes/app.routes')); // App Details routes
 app.use('/api/review', require('./routes/review.routes')); // App Details routes
-app.use('/api/room', require('./routes/room.routes')); // App Details routes
+app.use('/api/rooms', require('./routes/room.routes')); // App Details routes
 app.use('/api/images', require('./routes/image.routes'));
 
 const PORT = process.env.PORT || 2000;

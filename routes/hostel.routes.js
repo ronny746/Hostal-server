@@ -4,7 +4,8 @@ const router = express.Router();
 
 router.post('/', createHostel);
 router.get('/', getHostels);
-router.put('/:id', updateHostel);
+// router.put('/:id', updateHostel);
+router.put('/:hostelId', updateHostel);
 router.delete('/:id', deleteHostel);
 
 router.get('/search', searchHostels);
