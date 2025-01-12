@@ -71,26 +71,82 @@ exports.getRoom = async (req, res) => {
     }
 };
 
-
-exports.getRoomsByHostelId = async (req, res) => {
+exports.getAllRooms = async (req, res) => {
     try {
-        const { hostelId } = req.params;
-
-        // Fetch rooms for the given hostel ID
-        const rooms = await Room.find({ hostal: hostelId });
-
-        if (!rooms || rooms.length === 0) {
-            return res.status(404).json({ message: 'No rooms found for this hostel.' });
-        }
-
-        res.status(200).json({ 
-            message: 'Rooms retrieved successfully.',
+        const rooms = await Room.find(); // Fetch all rooms
+        res.status(200).json({
+            message: 'Rooms fetched successfully.',
             rooms,
         });
     } catch (error) {
-        console.error('Error fetching rooms:', error);
         res.status(500).json({
-            message: 'An error occurred while fetching rooms.',
+            message: 'Failed to fetch rooms.',
+            error: error.message,
+        });
+    }
+};
+
+exports.getRoomsByHostelId = async (req, res) => {
+    try {
+        const { hostelId } = req.params; // Extract hostelId from the route parameters
+        if (!hostelId) {
+            return res.status(400).json({
+                message: 'Hostel ID is required.',
+            });
+        }
+
+        // Fetch all rooms linked to the given hostelId
+        const rooms = await Room.find({ hostal: hostelId });
+
+        if (rooms.length === 0) {
+            return res.status(404).json({
+                message: 'No rooms found for the specified hostel ID.',
+            });
+        }
+
+        res.status(200).json({
+            message: 'Rooms fetched successfully.',
+            rooms,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Failed to fetch rooms by hostel ID.',
+            error: error.message,
+        });
+    }
+};
+
+exports.updateRoom = async (req, res) => {
+    try {
+        // Extract room ID from the request params
+        const { roomId } = req.params;
+
+        // Extract the updated data from the request body
+        const updatedData = req.body;
+
+        // Find the room by ID and update it with the provided data
+        const updatedRoom = await Room.findByIdAndUpdate(
+            roomId,            // Room ID
+            updatedData,       // Data to update
+            { new: true }      // Return the updated document
+        );
+
+        // Check if the room was found and updated
+        if (!updatedRoom) {
+            return res.status(404).json({
+                message: 'Room not found. Please check the room ID.',
+            });
+        }
+
+        // Respond with the updated room data
+        res.status(200).json({
+            message: 'Room updated successfully.',
+            room: updatedRoom,
+        });
+    } catch (error) {
+        // Catch and return any errors
+        res.status(400).json({
+            message: 'Failed to update room. Please check the input data.',
             error: error.message,
         });
     }

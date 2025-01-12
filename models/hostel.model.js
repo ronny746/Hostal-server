@@ -4,25 +4,51 @@ const mongoose = require('mongoose');
 const HostelSchema = new mongoose.Schema({
   // General Information
   title: { type: String, required: true },
-  description: { type: String, required: true },
-  guestType: { type: String, required: true },
-  onlyFor: { type: String, required: true },
-  hostalType: { type: String, required: true },
-
+  hostelType: {
+    type: String,
+    required: true,
+    enum: [
+      'Hostel', 'PG', 'Guest House', 'House', '1 RK', '1 BHK', '2 BHK', '3 BHK', 'Resort'
+    ],
+  },
+  guestType: {
+    type: String, 
+    required: true,
+    enum: [
+      'Single Bedded',
+      'Double Bedded',
+      'Triple Bedded',
+      'Four Bedded',
+      'AC Single Bedded',
+      'AC Double Bedded',
+      'AC Triple Bedded',
+      'AC Four Bedded',
+      'Classic',
+      'Deluxe',
+      'Super Deluxe',
+    ],
+  },
   // Facilities
-  ac: { type: Boolean, default: false },
-  nonac: { type: Boolean, default: true },
+  onlyFor: { type: String, enum: ['Male', 'Female','Both'], default:'Men' },
+  ac: { type: String, enum: ['AC', 'Non AC','Both'],default:"Non AC"},
   mess: { type: Boolean, default: false },
   laundry: { type: Boolean, default: false },
   gym: { type: Boolean, default: false },
-  roomIn: { type: Boolean, default: false },
+
+  roomIn: {
+    type: String,
+    required: true,
+    enum: [
+     'Multi Building', 'Building', 'Individual House','Villa','Double Story','Duplex','Resort','Society'
+    ],
+  },
   sharedSpace: { type: Boolean, default: false },
   dedicatedBathroom: { type: Boolean, default: false },
 
   // Additional Information
   aboutThisPlace: { type: String },
-  inTime: { type: String },
-  outTime: { type: String },
+  inTime: { type: String, default: '06:00 AM' },
+  outTime: { type: String, default: '10:00 PM' },
 
   // Rules
   rules: [
@@ -33,7 +59,7 @@ const HostelSchema = new mongoose.Schema({
   ],
 
   // Policies
-  cancellationPolicy: { type: String },
+  cancellationPolicy: { type: String, enum: ['No', 'Before 24 hours','Any Time'],default:'No'},
   smokingZone: { type: Boolean, default: false },
   petsAllowed: { type: Boolean, default: false },
 
@@ -41,7 +67,7 @@ const HostelSchema = new mongoose.Schema({
   amenities: [{ type: String }],
 
   // Location Details
-  mapUrl: { type: String },
+  // mapLocation: { type: String },
   flatType: { type: String },
   streetAddress: { type: String },
   nearbyLandmark: { type: String },
@@ -50,28 +76,19 @@ const HostelSchema = new mongoose.Schema({
   state: { type: String },
   pinCode: { type: String },
 
+  sfetyDescription: { type: String },
   // Room Details
   totalRooms: { type: Number },
-  singleBedded: { type: Number },
-  doubleBedded: { type: Number },
-  tripleBedded: { type: Number },
-  fourBedded: { type: Number },
 
-  // Rates
-  rateSingleBedded: { type: Number },
-  rateDoubleBedded: { type: Number },
-  rateTripleBedded: { type: Number },
-  rateFourBedded: { type: Number },
   weeklyDiscount: { type: Number },
   monthlyDiscount: { type: Number },
   bookingAmount: { type: Number },
-
-  // Images
-  singleBeddedImage: { type: String },
-  doubleBeddedImage: { type: String },
-  tripleBeddedImage: { type: String },
-  fourBeddedImage: { type: String },
-  images: { type: [String] }, 
+  host: {   
+    type: mongoose.Schema.Types.ObjectId, 
+          ref: 'User', 
+          required: true  
+        },
+   
 }, { timestamps: true });
 
 module.exports = mongoose.model('Hostel', HostelSchema);
