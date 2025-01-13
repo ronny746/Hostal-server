@@ -12,7 +12,7 @@ const HostelSchema = new mongoose.Schema({
     ],
   },
   guestType: {
-    type: String, 
+    type: String,
     required: true,
     enum: [
       'Single Bedded',
@@ -29,8 +29,8 @@ const HostelSchema = new mongoose.Schema({
     ],
   },
   // Facilities
-  onlyFor: { type: String, enum: ['Male', 'Female','Both'], default:'Men' },
-  ac: { type: String, enum: ['AC', 'Non AC','Both'],default:"Non AC"},
+  onlyFor: { type: String, enum: ['Male', 'Female', 'Both'], default: 'Men' },
+  ac: { type: String, enum: ['AC', 'Non AC', 'Both'], default: "Non AC" },
   mess: { type: Boolean, default: false },
   laundry: { type: Boolean, default: false },
   gym: { type: Boolean, default: false },
@@ -39,7 +39,7 @@ const HostelSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: [
-     'Multi Building', 'Building', 'Individual House','Villa','Double Story','Duplex','Resort','Society'
+      'Multi Building', 'Building', 'Individual House', 'Villa', 'Double Story', 'Duplex', 'Resort', 'Society'
     ],
   },
   sharedSpace: { type: Boolean, default: false },
@@ -59,7 +59,7 @@ const HostelSchema = new mongoose.Schema({
   ],
 
   // Policies
-  cancellationPolicy: { type: String, enum: ['No', 'Before 24 hours','Any Time'],default:'No'},
+  cancellationPolicy: { type: String, enum: ['No', 'Before 24 hours', 'Any Time'], default: 'No' },
   smokingZone: { type: Boolean, default: false },
   petsAllowed: { type: Boolean, default: false },
 
@@ -77,18 +77,35 @@ const HostelSchema = new mongoose.Schema({
   pinCode: { type: String },
 
   sfetyDescription: { type: String },
+  images: { type: [String] },
   // Room Details
   totalRooms: { type: Number },
 
   weeklyDiscount: { type: Number },
   monthlyDiscount: { type: Number },
   bookingAmount: { type: Number },
-  host: {   
-    type: mongoose.Schema.Types.ObjectId, 
-          ref: 'User', 
-          required: true  
-        },
-   
+
+  host: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+
+  payFull: { type: Boolean, default: true },
+  discount: { type: Number, default: 0 },
+  couponCode: { type: String, },
+  contactNumber: { type: Number },
+
+  ratings: { type: Number, default: 0 }, // Average rating
+  reviewsCount: { type: Number, default: 0 }, // Number of reviews
+  reviews: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      rating: { type: Number, required: true },
+      comment: { type: String },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Hostel', HostelSchema);
