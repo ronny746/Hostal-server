@@ -1,5 +1,6 @@
 const Hostel = require('../models/hostel.model');
 const Room = require('../models/room.model');
+const User = require('../models/user.model');
 
 // Create Hostel
 exports.createHostel = async (req, res) => {
@@ -39,7 +40,7 @@ exports.createHostel = async (req, res) => {
 exports.getHostels = async (req, res) => {
     try {
         const filters = req.query;
-        const hostels = await Hostel.find(filters);
+        const hostels = await Hostel.find(filters).populate('host', 'name phone email');
 
         if (!hostels.length) {
             return res.status(404).json({ message: 'No hostels found.' });
