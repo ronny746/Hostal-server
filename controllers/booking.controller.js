@@ -26,17 +26,28 @@ exports.bookHostel = async (req, res) => {
 
 
         // Check for overlapping bookings
-        const overlappingBooking = await Booking.findOne({
+        const existingBookings = await Booking.find({
             room: roomId,
+            status: 'Confirmed',
             $or: [
-                { checkIn: { $lte: checkOut, $gte: checkIn } },
-                { checkOut: { $lte: checkOut, $gte: checkIn } }
-            ],
-            status: 'Confirmed'
+                { checkIn: { $lt: checkOut, $gte: checkIn } },
+                { checkOut: { $gt: checkIn, $lte: checkOut } },
+                { checkIn: { $lte: checkIn }, checkOut: { $gte: checkOut } }
+            ]
         });
-        if (overlappingBooking) {
-            return res.status(400).json({ message: 'Room is not available for the selected dates' });
-        }
+
+         // Calculate total guests already booked
+         let totalGuests = 0;
+         existingBookings.forEach(booking => {
+             totalGuests += booking.guests;
+         });
+ 
+         // Check room capacity
+         if (totalGuests + guests > room.capacity) {
+             return res.status(400).json({
+                 message: `Room is not available. Available spots: ${room.capacity - totalGuests}`
+             });
+         }
 
         // Create the booking
         const booking = new Booking({
@@ -81,9 +92,13 @@ exports.getBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
             .populate('user', 'name email') // Populate user name and email
-            .populate('hostel', 'name address'); // Populate hostel name and address
+            .populate('hostel', 'name address') // Populate hostel name and address
+            .populate('room', 'roomNumber capacity'); // Populate room number and capacity
 
-        res.status(200).json(bookings);
+            if (!bookings.length) {
+                return res.status(404).json({ message: 'No bookings found' });
+            }
+        res.status(200).json({message: 'Bookings retrieved successfully', bookings});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

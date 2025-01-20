@@ -8,7 +8,7 @@ router.get('/hostels/:id', getRoom);
 router.post('/hostels/:hostelId/rooms', addRoom);
 
 router.get('/', getAllRooms);
-router.get('/hostel/:hostelId', getRoomsByHostelId);
+router.get('/hostel/', getRoomsByHostelId);
 router.put('/:roomId', updateRoom);
 
 module.exports = router;
