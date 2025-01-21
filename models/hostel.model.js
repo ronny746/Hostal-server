@@ -71,7 +71,8 @@ const HostelSchema = new mongoose.Schema({
   pinCode: { type: String },
 
   sfetyDescription: { type: String },
-  images: { type: [String] },
+  images: [{ type: String }],
+  video: { type: String },
   // Room Details
   totalRooms: { type: Number },
   acCharges: { type: Number, default: 0 },

@@ -4,8 +4,7 @@ const User = require('../models/user.model'); // Path to your User model
 
 exports.addReview = async (req, res) => {
     try {
-        const { hostelId } = req.params; // Hostel ID
-        const { userId, rating, comment } = req.body; // Review details
+        const { hostelId,userId, rating, comment } = req.body; // Review details
 
         // Validate required fields
         if (!userId || !rating) {
