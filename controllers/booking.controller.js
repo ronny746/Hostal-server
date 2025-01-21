@@ -41,11 +41,11 @@ exports.bookHostel = async (req, res) => {
          existingBookings.forEach(booking => {
              totalGuests += booking.guests;
          });
- 
+
          // Check room capacity
-         if (totalGuests + guests > room.capacity) {
+         if (totalGuests + guests > room.availableGuests) {
              return res.status(400).json({
-                 message: `Room is not available. Available spots: ${room.capacity - totalGuests}`
+                 message: `Room is not available. Available spots: ${room.availableGuests - totalGuests}`
              });
          }
 
@@ -68,8 +68,6 @@ exports.bookHostel = async (req, res) => {
         res.status(400).json({ message: 'Error creating booking', error: error.message });
     }
 };
-
-
 
 exports.getHostelDetails = async (req, res) => {
     try {
