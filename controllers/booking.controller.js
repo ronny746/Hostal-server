@@ -10,7 +10,7 @@ const Room = require('../models/room.model'); // Adjust the path as needed
 
 exports.bookHostel = async (req, res) => {
     try {
-        const { userId, hostelId, roomId, checkIn, checkOut, guests, totalPrice, paymentMethod } = req.body;
+        const { userId, hostelId, rooms, checkIn, checkOut, totalPrice, paymentMethod } = req.body;
 
         // Validate user existence
         const user = await User.findById(userId);
@@ -20,46 +20,71 @@ exports.bookHostel = async (req, res) => {
         const hostel = await Hostel.findById(hostelId);
         if (!hostel) return res.status(404).json({ message: 'Hostel not found' });
  
-        // Validate room existence
-        const room = await Room.findById(roomId);
-        if (!room) return res.status(404).json({ message: 'Room not found' });
+        let allBookings = [];
 
+        for (const roomRequest of rooms) {
+            const { roomId, numRooms, guestsPerRoom } = roomRequest;
 
-        // Check for overlapping bookings
-        const existingBookings = await Booking.find({
-            room: roomId,
-            status: 'Confirmed',
-            $or: [
-                { checkIn: { $lt: checkOut, $gte: checkIn } },
-                { checkOut: { $gt: checkIn, $lte: checkOut } },
-                { checkIn: { $lte: checkIn }, checkOut: { $gte: checkOut } }
-            ]
-        });
+            // Validate room existence
+            const room = await Room.findById(roomId);
+            if (!room) {
+                return res.status(404).json({
+                    message: `Room with ID ${roomId} not found`,
+                });
+            }
 
-         // Calculate total guests already booked
-         let totalGuests = 0;
-         existingBookings.forEach(booking => {
-             totalGuests += booking.guests;
-         });
+            // Check for overlapping bookings
+            const existingBookings = await Booking.find({
+                room: roomId,
+                status: 'Confirmed',
+                $or: [
+                    { checkIn: { $lt: checkOut, $gte: checkIn } },
+                    { checkOut: { $gt: checkIn, $lte: checkOut } },
+                    { checkIn: { $lte: checkIn }, checkOut: { $gte: checkOut } },
+                ],
+            });
 
-         // Check room capacity
-         if (totalGuests + guests > room.availableGuests) {
-             return res.status(400).json({
-                 message: `Room is not available. Available spots: ${room.availableGuests - totalGuests}`
-             });
-         }
+            // Calculate total rooms and guests already booked
+            let totalBookedRooms = 0;
+            let totalGuests = 0;
 
-        // Create the booking
-        const booking = new Booking({
-            user: userId,
-            hostel: hostelId,
-            room: roomId,
-            checkIn,
-            checkOut,
-            guests,
-            totalPrice,
-            paymentMethod
-        });
+            existingBookings.forEach((booking) => {
+                totalBookedRooms += booking.numRooms || 0;
+                totalGuests += booking.guests || 0;
+            });
+
+            // Check room and guest capacity
+            const availableRooms = room.totalRooms - totalBookedRooms;
+            const availableGuests = availableRooms * room.guestAllowedPerRoom - totalGuests;
+
+            if (numRooms > availableRooms) {
+                return res.status(400).json({
+                    message: `Not enough rooms available for room type ${room.roomType}. Available: ${availableRooms}`,
+                });
+            }
+
+            if (numRooms * guestsPerRoom > availableGuests) {
+                return res.status(400).json({
+                    message: `Not enough guest capacity for room type ${room.roomType}. Available spots: ${availableGuests}`,
+                });
+            }
+
+            // Create individual bookings for each room type
+            const booking = new Booking({
+                user: userId,
+                hostel: hostelId,
+                room: roomId,
+                numRooms,
+                guests: numRooms * guestsPerRoom,
+                checkIn,
+                checkOut,
+                totalPrice, // Optionally, you can calculate the price per room here
+                paymentMethod,
+            });
+
+            await booking.save();
+            allBookings.push(booking);
+        }
 
         await booking.save();
 
