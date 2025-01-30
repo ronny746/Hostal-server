@@ -139,10 +139,10 @@ exports.getUserBookings = async (req, res) => {
         // Verify the token and extract user ID
         // const decoded = jwt.verify(token, 'hostal');
 
-        console.log(id);
+        console.log(userId);
 
         // Fetch bookings for the user
-        const bookings = await Booking.find({ user: id })
+        const bookings = await Booking.find({ user: userId })
             .populate('hostel', 'name address')
             .populate('room', 'name price capacity amenities');
 
