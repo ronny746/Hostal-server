@@ -169,28 +169,3 @@ exports.cancelBooking = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-exports.confirmBooking = async (req, res) => {
-    try {
-        const { bookingId } = req.params;
-
-        // Find booking by ID
-        const booking = await Booking.findById(bookingId);
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
-        }
-
-        // Check if booking is already confirmed
-        if (booking.status === 'Confirmed') {
-            return res.status(400).json({ message: 'Booking is already confirmed' });
-        }
-
-        // Update booking status to "Confirmed"
-        booking.status = 'Confirmed';
-        await booking.save();
-
-        res.status(200).json({ message: 'Booking confirmed successfully', booking });
-    } catch (error) {
-        res.status(500).json({ message: 'Error confirming booking', error: error.message });
-    }
-};
-

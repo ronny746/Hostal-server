@@ -1,6 +1,6 @@
 
 
-const Booking = require('../models/booking.model');
+const Booking = require('../models/.model');
 const User = require('../models/user.model');
 const Hostel = require('../models/hostel.model');
 const jwt = require('jsonwebtoken');
@@ -19,7 +19,7 @@ exports.bookHostel = async (req, res) => {
         // Validate hostel existence
         const hostel = await Hostel.findById(hostelId);
         if (!hostel) return res.status(404).json({ message: 'Hostel not found' });
-
+ 
         let allBookings = [];
 
         for (const roomRequest of rooms) {
@@ -86,12 +86,13 @@ exports.bookHostel = async (req, res) => {
             allBookings.push(booking);
         }
 
-        res.status(201).json({ message: 'Booking created successfully', allBookings });
+        await booking.save();
+
+        res.status(201).json({ message: 'Booking created successfully', booking });
     } catch (error) {
         res.status(400).json({ message: 'Error creating booking', error: error.message });
     }
 };
-
 
 exports.getHostelDetails = async (req, res) => {
     try {
@@ -169,28 +170,3 @@ exports.cancelBooking = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-exports.confirmBooking = async (req, res) => {
-    try {
-        const { bookingId } = req.params;
-
-        // Find booking by ID
-        const booking = await Booking.findById(bookingId);
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
-        }
-
-        // Check if booking is already confirmed
-        if (booking.status === 'Confirmed') {
-            return res.status(400).json({ message: 'Booking is already confirmed' });
-        }
-
-        // Update booking status to "Confirmed"
-        booking.status = 'Confirmed';
-        await booking.save();
-
-        res.status(200).json({ message: 'Booking confirmed successfully', booking });
-    } catch (error) {
-        res.status(500).json({ message: 'Error confirming booking', error: error.message });
-    }
-};
-
