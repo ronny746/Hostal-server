@@ -7,6 +7,6 @@ router.get('/hosteldetails/:hostelId',bookingController.getHostelDetails);
 router.get('/', bookingController.getBookings); // Get all bookings
 router.get('/user', bookingController.getUserBookings); // Get bookings by user
 router.patch('/:bookingId/cancel', bookingController.cancelBooking); // Cancel a booking
-router.patch('/:bookingId/confirm', bookingController.confirmBooking); // confirm a booking
+router.patch('/:bookingId/confirm', bookingController.confirmBooking); // Cancel a booking
 
 module.exports = router;
