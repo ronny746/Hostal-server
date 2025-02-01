@@ -27,8 +27,8 @@ export const createOrder = async (req, res) => {
             maxBodyLength: Infinity,
             url: 'https://sandbox.cashfree.com/pg/orders',
             headers: {
-                'x-client-id': process.env.CASHFREE_CLIENT_ID,
-                'x-client-secret': process.env.CASHFREE_CLIENT_SECRET,
+                'x-client-id': "TEST1045882831b47a921e4f3131c4f582885401",
+                'x-client-secret': "cfsk_ma_test_0f9601ad3835b3f97f8665c7ebc7905c_af366842",
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'x-api-version': '2023-08-01'
