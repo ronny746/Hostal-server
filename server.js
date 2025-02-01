@@ -20,6 +20,8 @@ app.use('/api/rooms', require('./routes/room.routes')); // App Details routes
 app.use('/api/images', require('./routes/image.routes'));
 app.use('/api', require('./routes/pdfRoutes'));
 app.use('/api',  require('./routes/qrRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/transactions', require('./routes/transactionRoutes'));
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
