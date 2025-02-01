@@ -82,9 +82,10 @@ const HostelSchema = new mongoose.Schema({
 
   payFull: { type: Boolean, default: true },
   payPercentage: { type: Number, default: 0 },
-  weeklyDiscount: { type: Number },
-  monthlyDiscount: { type: Number },
-  bookingAmount: { type: Number },
+
+  topBookingDiscount: { type: Number, default: 0 },
+  weeklyDiscount: { type: Number, default: 0 },
+  monthlyDiscount: { type: Number, default: 0 },
 
   host: {
     type: mongoose.Schema.Types.ObjectId,
