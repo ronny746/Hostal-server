@@ -97,24 +97,6 @@ exports.getRoomsByHostelId = async (req, res) => {
             });
         }
 
-        if (!fromDate || !toDate) {
-            return res.status(400).json({
-                message: 'Both fromDate and toDate are required.',
-            });
-        }
-
-        const from = new Date(fromDate); 
-        from.setHours(0, 0, 0, 0); // Start of the day
-
-        const to = new Date(toDate);
-        to.setHours(23, 59, 59, 999); // End of the day
-
-        if (from >= to) {
-            return res.status(400).json({
-                message: 'Invalid date range: fromDate should be earlier than toDate.',
-            });
-        }
-
         // Fetch all rooms linked to the given hostelId
         const rooms = await Room.find({ hostal: hostelId });
 
@@ -124,38 +106,62 @@ exports.getRoomsByHostelId = async (req, res) => {
             });
         }
 
+        let from, to;
+        let filterByDate = false;  // Flag to check if date filtering is needed
+
+        if (fromDate && toDate) {
+            from = new Date(fromDate);
+            from.setHours(0, 0, 0, 0);
+
+            to = new Date(toDate);
+            to.setHours(23, 59, 59, 999);
+
+            if (from >= to) {
+                return res.status(400).json({
+                    message: 'Invalid date range: fromDate should be earlier than toDate.',
+                });
+            }
+            filterByDate = true;
+        }
+
         const roomDetails = await Promise.all(
             rooms.map(async (room) => {
-                const bookings = await Booking.find({
-                    room: room._id,
-                    status: 'Pending',  //Confirmed'
-                    $or: [
-                        { checkIn: { $lte: to }, checkOut: { $gte: from } },
-                        { checkIn: { $gte: from, $lte: to } },
-                    ],
-                });
+                let availableRooms = room.totalRooms;
+                let availableGuests = room.totalRooms * room.guestAllowedPerRoom;
+                let bookedRooms = 0;
 
-                let totalOccupiedGuests = 0;
-                bookings.forEach((booking) => {
-                    totalOccupiedGuests += booking.guests;
-                });
+                let bookings = [];  // Initialize as empty array
 
-                // Calculate remaining availability
-                const availableRooms = Math.max(0, room.totalRooms - bookings.length); // Rooms not fully booked
-                const availableGuests = Math.max(0, (room.totalRooms * room.guestAllowedPerRoom) - totalOccupiedGuests); // Remaining guest capacity
+                if (filterByDate) {
+                    bookings = await Booking.find({
+                        room: room._id,
+                        status: 'Confirmed',
+                        $or: [
+                            { checkIn: { $lte: to }, checkOut: { $gte: from } },
+                            { checkIn: { $gte: from, $lte: to } },
+                        ],
+                    });
+
+                    let totalOccupiedGuests = bookings.reduce((sum, booking) => sum + booking.guests, 0);
+
+                    // Calculate available rooms and guests
+                    availableRooms = Math.max(0, room.totalRooms - bookings.length);
+                    availableGuests = Math.max(0, (room.totalRooms * room.guestAllowedPerRoom) - totalOccupiedGuests);
+                    bookedRooms = bookings.length;
+                }
 
                 return {
                     roomId: room._id,
                     roomType: room.roomType,
                     totalRooms: room.totalRooms,
-                    availableRooms:availableRooms,
+                    availableRooms: availableRooms,
                     guestAllowedPerRoom: room.guestAllowedPerRoom,
                     totalGuestCapacity: room.totalRooms * room.guestAllowedPerRoom,
-                    availableGuests:availableGuests,
+                    availableGuests: availableGuests,
                     ratePerDay: room.ratePerDay,
                     description: room.description,
                     images: room.images,
-                    bookedRooms: bookings.length,
+                    bookedRooms: bookedRooms,
                     hostal: room.hostal,
                 };
             })
@@ -172,6 +178,7 @@ exports.getRoomsByHostelId = async (req, res) => {
         });
     }
 };
+
 
 exports.updateRoom = async (req, res) => {
     try {
