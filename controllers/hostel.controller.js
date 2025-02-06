@@ -7,36 +7,49 @@ exports.createHostel = async (req, res) => {
     try {
         const predefinedRules = [
             { title: 'Check-In and Check-Out Timing', description: 'Guests must check in between 12:00 PM and 10:00 PM and check out by 11:00 AM. Early or late requests are subject to availability.' },
-            { title: 'Cleanliness', description: ' Keep your room and shared spaces clean. Dispose of trash responsibly and avoid leaving personal items unattended.' },
-            { title: 'Quiet Hours', description: "Maintain silence in dorms and common areas from 10:00 PM to 7:00 AM to respect other guest's comfort." }
+            { title: 'Cleanliness', description: 'Keep your room and shared spaces clean. Dispose of trash responsibly and avoid leaving personal items unattended.' },
+            { title: 'Quiet Hours', description: "Maintain silence in dorms and common areas from 10:00 PM to 7:00 AM to respect other guests' comfort." }
         ];
 
-        // Destructure `roomDetails` (rooms array) and other hostel-related data from the request body
-        const { roomDetails, ...hostelData } = req.body;
+        // Extract rules along with roomDetails and hostelData
+        const { roomDetails, rules = [], ...hostelData } = req.body;
+
+        // Merge predefined rules with provided rules (removing duplicates)
         const mergedRules = [...predefinedRules, ...rules.filter(rule =>
             !predefinedRules.some(preRule => preRule.title === rule.title)
         )];
-        // Create the hostel document
-        const hostel = await Hostel.create({ ...hostelData, rules: mergedRules });
 
-        // If `roomDetails` is provided and is a valid array, process it
+        const user = await User.findById(hostelData.host);
+        if (!user || !user.isHost) {
+            return res.status(403).json({
+                message: 'Access denied. Only hosts can create hostels.',
+            });
+        }
+        // Create hostel
+        const hostel = await Hostel.create({
+            ...hostelData,
+            rules: mergedRules,
+        });
+
+        // If roomDetails exist, associate rooms with the hostel
         if (Array.isArray(roomDetails) && roomDetails.length > 0) {
             const roomData = roomDetails.map((room) => ({
                 ...room,
-                hostal: hostel._id, // Associate the room with the created hostel
+                hostal: hostel._id,
             }));
-
-            // Insert all rooms into the `Room` collection
             await Room.insertMany(roomData);
         }
 
-        // Respond with success and return the created hostel data
+        // Respond with required hostel details
         res.status(201).json({
             message: 'Hostel created successfully.',
-            hostel,
+            hostel: {
+                ...hostel.toObject(),
+                rules: mergedRules.map(({ title, description }) => ({ title, description })), // Remove _id from rules
+            }
         });
+
     } catch (error) {
-        // Catch and return any errors that occur during the operation
         res.status(400).json({
             message: 'Failed to create hostel. Please check the input data.',
             error: error.message,

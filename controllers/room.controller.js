@@ -91,9 +91,10 @@ exports.getRoomsByHostelId = async (req, res) => {
     try {
         const { hostelId, fromDate, toDate } = req.body;
 
-        if (!hostelId) {
-            return res.status(400).json({
-                message: 'Hostel ID is required.',
+        const hostel = await Hostel.findById(hostelId);
+        if (!hostel) {
+            return res.status(404).json({
+                message: 'Hostel not found.',
             });
         }
 
@@ -103,6 +104,7 @@ exports.getRoomsByHostelId = async (req, res) => {
         if (rooms.length === 0) {
             return res.status(404).json({
                 message: 'No rooms found for the specified hostel ID.',
+                hostel:hostel.toObject()
             });
         }
 
@@ -170,6 +172,7 @@ exports.getRoomsByHostelId = async (req, res) => {
         res.status(200).json({
             message: 'Rooms fetched successfully.',
             rooms: roomDetails,
+            hostel:hostel.toObject()
         });
     } catch (error) {
         res.status(500).json({
