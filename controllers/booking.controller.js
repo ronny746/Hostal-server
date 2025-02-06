@@ -55,7 +55,7 @@ exports.bookHostel = async (req, res) => {
 
             // Check room and guest capacity
             const availableRooms = room.totalRooms - totalBookedRooms;
-            const availableGuests = availableRooms * room.guestAllowedPerRoom - totalGuests;
+            const availableGuestCapacity = availableRooms * room.guestAllowedPerRoom - totalGuests;
 
             if (numRooms > availableRooms) {
                 return res.status(400).json({
@@ -63,9 +63,9 @@ exports.bookHostel = async (req, res) => {
                 });
             }
 
-            if (numRooms * guestsPerRoom > availableGuests) {
+            if (numRooms * guestsPerRoom > availableGuestCapacity) {
                 return res.status(400).json({
-                    message: `Not enough guest capacity for room type ${room.roomType}. Available spots: ${availableGuests}`,
+                    message: `Not enough guest capacity for room type ${room.roomType}. Available spots: ${availableGuestCapacity}`,
                 });
             }
 

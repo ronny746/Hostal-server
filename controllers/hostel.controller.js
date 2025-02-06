@@ -5,11 +5,19 @@ const User = require('../models/user.model');
 // Create Hostel
 exports.createHostel = async (req, res) => {
     try {
+        const predefinedRules = [
+            { title: 'Check-In and Check-Out Timing', description: 'Guests must check in between 12:00 PM and 10:00 PM and check out by 11:00 AM. Early or late requests are subject to availability.' },
+            { title: 'Cleanliness', description: ' Keep your room and shared spaces clean. Dispose of trash responsibly and avoid leaving personal items unattended.' },
+            { title: 'Quiet Hours', description: "Maintain silence in dorms and common areas from 10:00 PM to 7:00 AM to respect other guest's comfort." }
+        ];
+
         // Destructure `roomDetails` (rooms array) and other hostel-related data from the request body
         const { roomDetails, ...hostelData } = req.body;
-
+        const mergedRules = [...predefinedRules, ...rules.filter(rule =>
+            !predefinedRules.some(preRule => preRule.title === rule.title)
+        )];
         // Create the hostel document
-        const hostel = await Hostel.create(hostelData);
+        const hostel = await Hostel.create({ ...hostelData, rules: mergedRules });
 
         // If `roomDetails` is provided and is a valid array, process it
         if (Array.isArray(roomDetails) && roomDetails.length > 0) {
@@ -87,22 +95,34 @@ exports.updateHostel = async (req, res) => {
         // Destructure hostel ID from the request parameters
         const { hostelId } = req.params;
 
+        const predefinedRules = [
+            { title: 'Check-In and Check-Out Timing', description: 'Guests must check in between 12:00 PM and 10:00 PM and check out by 11:00 AM. Early or late requests are subject to availability.' },
+            { title: 'Cleanliness', description: ' Keep your room and shared spaces clean. Dispose of trash responsibly and avoid leaving personal items unattended.' },
+            { title: 'Quiet Hours', description: "Maintain silence in dorms and common areas from 10:00 PM to 7:00 AM to respect other guest's comfort." }
+        ];
         // Destructure `roomDetails` and other hostel-related data from the request body
-        const { roomDetails, ...hostelData } = req.body;
+        const { roomDetails, rules = [], ...hostelData } = req.body;
 
-        // Find and update the hostel
-        const updatedHostel = await Hostel.findByIdAndUpdate(
-            hostelId, 
-            hostelData, 
-            { new: true } // Return the updated document
-        );
-
-        // Check if the hostel was found
-        if (!updatedHostel) {
+        // Fetch existing hostel data
+        const existingHostel = await Hostel.findById(hostelId);
+        if (!existingHostel) {
             return res.status(404).json({
                 message: 'Hostel not found. Please check the hostel ID.',
             });
         }
+
+        // Ensure predefined rules are retained
+        const mergedRules = [
+            ...predefinedRules,
+            ...rules.filter(rule => !predefinedRules.some(preRule => preRule.title === rule.title))
+        ];
+
+        // Update the hostel with the merged rules
+        const updatedHostel = await Hostel.findByIdAndUpdate(
+            hostelId,
+            { ...hostelData, rules: mergedRules },
+            { new: true } // Return the updated document
+        );
 
         // Handle room updates if `roomDetails` is provided
         if (roomDetails && Array.isArray(roomDetails)) {
@@ -110,8 +130,8 @@ exports.updateHostel = async (req, res) => {
                 if (room._id) {
                     // If the room has an `_id`, update the existing room
                     await Room.findByIdAndUpdate(
-                        room._id, 
-                        { ...room, hostal: hostelId }, 
+                        room._id,
+                        { ...room, hostal: hostelId },
                         { new: true }
                     );
                 } else {
@@ -119,13 +139,8 @@ exports.updateHostel = async (req, res) => {
                     await Room.create({ ...room, hostal: hostelId });
                 }
             }
-
-            // Get all room IDs from `roomDetails`
-            // const roomIds = roomDetails.map((room) => room._id).filter(Boolean);
-
-            // // Delete any rooms linked to this hostel but not included in `roomDetails`
-            // await Room.deleteMany({ hostal: hostelId, _id: { $nin: roomIds } });
         }
+
 
         // Return a success response
         res.status(200).json({
@@ -150,8 +165,8 @@ exports.deleteHostel = async (req, res) => {
             return res.status(404).json({ message: 'Hostel not found.' });
         }
 
-        res.status(200).json({ 
-            message: 'Hostel deleted successfully.' 
+        res.status(200).json({
+            message: 'Hostel deleted successfully.'
         });
     } catch (error) {
         res.status(500).json({

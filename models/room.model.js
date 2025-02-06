@@ -23,7 +23,7 @@ const RoomSchema = new mongoose.Schema({
   hostal: { type: mongoose.Schema.Types.ObjectId, ref: 'Hostel', required: true },
   bookedRooms: { type: Number, default: 0 },
   availableRooms: { type: Number, default: 0 },
-  availableGuests: { type: Number, default: 0 },
+  availableGuestCapacity: { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Room', RoomSchema);

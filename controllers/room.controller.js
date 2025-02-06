@@ -127,7 +127,7 @@ exports.getRoomsByHostelId = async (req, res) => {
         const roomDetails = await Promise.all(
             rooms.map(async (room) => {
                 let availableRooms = room.totalRooms;
-                let availableGuests = room.totalRooms * room.guestAllowedPerRoom;
+                let availableGuestCapacity = room.totalRooms * room.guestAllowedPerRoom;
                 let bookedRooms = 0;
 
                 let bookings = [];  // Initialize as empty array
@@ -146,7 +146,7 @@ exports.getRoomsByHostelId = async (req, res) => {
 
                     // Calculate available rooms and guests
                     availableRooms = Math.max(0, room.totalRooms - bookings.length);
-                    availableGuests = Math.max(0, (room.totalRooms * room.guestAllowedPerRoom) - totalOccupiedGuests);
+                    availableGuestCapacity = Math.max(0, (room.totalRooms * room.guestAllowedPerRoom) - totalOccupiedGuests);
                     bookedRooms = bookings.length;
                 }
 
@@ -157,7 +157,7 @@ exports.getRoomsByHostelId = async (req, res) => {
                     availableRooms: availableRooms,
                     guestAllowedPerRoom: room.guestAllowedPerRoom,
                     totalGuestCapacity: room.totalRooms * room.guestAllowedPerRoom,
-                    availableGuests: availableGuests,
+                    availableGuestCapacity: availableGuestCapacity,
                     ratePerDay: room.ratePerDay,
                     description: room.description,
                     images: room.images,

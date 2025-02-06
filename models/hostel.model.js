@@ -96,7 +96,7 @@ const HostelSchema = new mongoose.Schema({
   discount: { type: Number, default: 0 },
   couponCode: { type: String, },
   contactNumber: { type: Number },
-
+  startingRate: { type: Number,default: 0 },
   ratings: { type: Number, default: 0 }, // Average rating
   reviewsCount: { type: Number, default: 0 }, // Number of reviews
   reviews: [
