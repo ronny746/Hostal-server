@@ -119,7 +119,7 @@ exports.getBookingsForHost = async (req, res) => {
         // Find all bookings for these hostels
         const bookings = await Booking.find({ hostel: { $in: hostelIds } })
             .populate('user', 'name email')  // Populate user details
-            .populate('hostel', 'name location')  // Populate hostel details
+            .populate('hostel', 'title host ')  // Populate hostel details
             .populate('rooms.room', 'roomType ratePerDay');  // Populate room details
 
         if (!bookings.length) {

@@ -164,7 +164,7 @@ exports.getUserBookings = async (req, res) => {
         const bookings = await Booking.find({ user: id })
         .populate({
             path: 'hostel',
-            select: 'name images ac mess laundry gym'
+            select: 'title images ac mess laundry gym'
         })
         .populate({
             path: 'rooms.room',
