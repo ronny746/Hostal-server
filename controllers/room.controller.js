@@ -132,11 +132,11 @@ exports.getRoomsByHostelId = async (req, res) => {
                 let availableGuestCapacity = room.totalRooms * room.guestAllowedPerRoom;
                 let bookedRooms = 0;
 
-                let bookings = [];  // Initialize as empty array
+                let bookings = [];  
 
                 if (filterByDate) {
                     bookings = await Booking.find({
-                        room: room._id,
+                        'rooms.room': room._id,
                         status: 'Confirmed',
                         $or: [
                             { checkIn: { $lte: to }, checkOut: { $gte: from } },
@@ -144,12 +144,17 @@ exports.getRoomsByHostelId = async (req, res) => {
                         ],
                     });
 
-                    let totalOccupiedGuests = bookings.reduce((sum, booking) => sum + booking.guests, 0);
+                    let totalOccupiedGuests = bookings.reduce((sum, booking) => {
+                        return sum + booking.rooms.reduce((roomSum, r) => {
+                            return r.room.toString() === room._id.toString() ? roomSum + r.guests : roomSum;
+                        }, 0);
+                    }, 0);
 
                     // Calculate available rooms and guests
-                    availableRooms = Math.max(0, room.totalRooms - bookings.length);
+                   bookedRooms = bookings.length;
+                    availableRooms = Math.max(0, room.totalRooms - bookedRooms);
                     availableGuestCapacity = Math.max(0, (room.totalRooms * room.guestAllowedPerRoom) - totalOccupiedGuests);
-                    bookedRooms = bookings.length;
+              
                 }
 
                 return {

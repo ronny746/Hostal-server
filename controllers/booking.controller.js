@@ -4,13 +4,11 @@ const Booking = require('../models/booking.model');
 const User = require('../models/user.model');
 const Hostel = require('../models/hostel.model');
 const jwt = require('jsonwebtoken');
-const Room = require('../models/room.model'); // Adjust the path as needed
-
-
+const Room = require('../models/room.model'); 
 
 exports.bookHostel = async (req, res) => {
     try {
-        const { userId, hostelId, rooms, checkIn, checkOut, totalPrice, paymentMethod } = req.body;
+        const { userId, hostelId, checkIn, checkOut, totalGuests, rooms, totalPrice, paymentPercentage, paymentMethod } = req.body;
 
         // Validate user existence
         const user = await User.findById(userId);
@@ -20,22 +18,23 @@ exports.bookHostel = async (req, res) => {
         const hostel = await Hostel.findById(hostelId);
         if (!hostel) return res.status(404).json({ message: 'Hostel not found' });
 
-        let allBookings = [];
+        let allBookedRooms = [];
+        let paymentPercent = Math.max(0, Math.min(100, paymentPercentage)); // Ensure valid range (0-100)
+        let amountPaid = (totalPrice * paymentPercent) / 100;
+        let remainingAmount = totalPrice - amountPaid;
 
         for (const roomRequest of rooms) {
-            const { roomId, numRooms, guestsPerRoom } = roomRequest;
+            const { roomId, guests } = roomRequest;
 
             // Validate room existence
             const room = await Room.findById(roomId);
             if (!room) {
-                return res.status(404).json({
-                    message: `Room with ID ${roomId} not found`,
-                });
+                return res.status(404).json({ message: `Room with ID ${roomId} not found` });
             }
 
             // Check for overlapping bookings
             const existingBookings = await Booking.find({
-                room: roomId,
+                "rooms.room": roomId,
                 status: 'Confirmed',
                 $or: [
                     { checkIn: { $lt: checkOut, $gte: checkIn } },
@@ -44,49 +43,69 @@ exports.bookHostel = async (req, res) => {
                 ],
             });
 
-            // Calculate total rooms and guests already booked
-            let totalBookedRooms = 0;
-            let totalGuests = 0;
-
+            let totalBookedGuests = 0;
             existingBookings.forEach((booking) => {
-                totalBookedRooms += booking.numRooms || 0;
-                totalGuests += booking.guests || 0;
+                booking.rooms.forEach((r) => {
+                    if (r.room.toString() === roomId.toString()) {
+                        totalBookedGuests += r.guests;
+                    }
+                });
             });
 
-            // Check room and guest capacity
-            const availableRooms = room.totalRooms - totalBookedRooms;
-            const availableGuestCapacity = availableRooms * room.guestAllowedPerRoom - totalGuests;
+            const availableGuestCapacity = room.totalRooms * room.guestAllowedPerRoom - totalBookedGuests;
 
-            if (numRooms > availableRooms) {
+            if (guests > availableGuestCapacity) {
                 return res.status(400).json({
-                    message: `Not enough rooms available for room type ${room.roomType}. Available: ${availableRooms}`,
+                    message: `Not enough space in room type ${room.roomType}. Available spots: ${availableGuestCapacity}`,
                 });
             }
 
-            if (numRooms * guestsPerRoom > availableGuestCapacity) {
-                return res.status(400).json({
-                    message: `Not enough guest capacity for room type ${room.roomType}. Available spots: ${availableGuestCapacity}`,
-                });
-            }
-
-            // Create individual bookings for each room type
-            const booking = new Booking({
-                user: userId,
-                hostel: hostelId,
+            allBookedRooms.push({
                 room: roomId,
-                numRooms,
-                guests: numRooms * guestsPerRoom,
-                checkIn,
-                checkOut,
-                totalPrice, // Optionally, you can calculate the price per room here
-                paymentMethod,
+                guests,
             });
-
-            await booking.save();
-            allBookings.push(booking);
         }
 
-        res.status(201).json({ message: 'Booking created successfully', allBookings });
+        // Create booking
+        const booking = new Booking({
+            user: userId,
+            hostel: hostelId,
+            rooms: allBookedRooms,
+            totalGuests,
+            checkIn,
+            checkOut,
+            totalPrice,
+            paymentPercentage,
+            amountPaid,
+            remainingAmount,
+            paymentStatus: paymentPercent === 100 ? 'Paid' : 'Partially Paid',
+            paymentMethod,
+            status: 'Confirmed',
+        });
+
+        await booking.save();
+
+        res.status(201).json({
+            message: 'Booking successful',
+            bookingDetails: {
+                userId,
+                hostelId,
+                checkIn,
+                checkOut,
+                totalGuests,
+                totalPrice,
+                paymentPercentage,
+                amountPaid,
+                remainingAmount,
+                paymentStatus: booking.paymentStatus,
+                paymentMethod,
+                rooms: allBookedRooms.map((r) => ({
+                    roomId: r.room,
+                    guests: r.guests,
+                })),
+            }
+        });
+
     } catch (error) {
         res.status(400).json({ message: 'Error creating booking', error: error.message });
     }
@@ -143,8 +162,17 @@ exports.getUserBookings = async (req, res) => {
 
         // Fetch bookings for the user
         const bookings = await Booking.find({ user: id })
-            .populate('hostel', 'name address')
-            .populate('room', 'name price capacity amenities');
+        .populate({
+            path: 'hostel',
+            select: 'name images ac mess laundry gym'
+        })
+        .populate({
+            path: 'rooms.room',
+            select: 'roomType'
+            });
+            if (!bookings) {
+                return res.status(404).json({ message: 'No bookings found for this user' });
+            }
 
         res.status(200).json({ message: 'User bookings retrieved successfully', bookings });
     } catch (error) {
