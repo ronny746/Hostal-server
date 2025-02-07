@@ -1,6 +1,7 @@
 const Hostel = require('../models/hostel.model');
 const Room = require('../models/room.model');
 const User = require('../models/user.model');
+const Booking = require('../models/booking.model');
 
 // Create Hostel
 exports.createHostel = async (req, res) => {
@@ -75,6 +76,64 @@ exports.getHostels = async (req, res) => {
         res.status(500).json({
             message: 'An error occurred while fetching hostels.',
             error: error.message,
+        });
+    }
+};
+
+exports.getHostListings = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Find hostels where the `addedBy` field matches userId
+        const hostels = await Hostel.find({ host: userId });
+
+        if (!hostels.length) {
+            return res.status(404).json({ message: 'No hostels found for this user.' });
+        }
+
+        res.status(200).json({
+            message: 'Hostels retrieved successfully.',
+            hostels
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Failed to retrieve hostels.',
+            error: error.message
+        });
+    }
+};
+
+exports.getBookingsForHost = async (req, res) => {
+    try {
+        const { hostId } = req.params;
+
+        // Find all hostels added by the host
+        const hostels = await Hostel.find({ host: hostId });
+
+        if (!hostels.length) {
+            return res.status(404).json({ message: 'No hostels found for this host.' });
+        }
+
+        const hostelIds = hostels.map(hostel => hostel._id);
+
+        // Find all bookings for these hostels
+        const bookings = await Booking.find({ hostel: { $in: hostelIds } })
+            .populate('user', 'name email')  // Populate user details
+            .populate('hostel', 'name location')  // Populate hostel details
+            .populate('rooms.room', 'roomType ratePerDay');  // Populate room details
+
+        if (!bookings.length) {
+            return res.status(404).json({ message: 'No bookings found for the host.' });
+        }
+
+        res.status(200).json({
+            message: 'Bookings retrieved successfully.',
+            bookings
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Failed to retrieve bookings.',
+            error: error.message
         });
     }
 };
