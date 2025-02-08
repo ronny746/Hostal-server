@@ -8,7 +8,7 @@ const {
     getHostListings,
     getBookingsForHost
 } = require('../controllers/hostel.controller');
-const authenticateToken = require('../config/middlewares'); // Import the auth middleware
+const authenticateToken = require('../'); // Import the auth middleware
 
 const router = express.Router();
 

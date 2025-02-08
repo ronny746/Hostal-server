@@ -30,7 +30,7 @@ const HostelSchema = new mongoose.Schema({
   mess: { type: Boolean, default: false },
   laundry: { type: Boolean, default: false },
   gym: { type: Boolean, default: false },
-  favorite: { type: Boolean, default: false },
+  gym: { type: Boolean, default: false },
 
   roomIn: {
     type: String,

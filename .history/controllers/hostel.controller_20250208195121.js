@@ -2,7 +2,7 @@ const Hostel = require('../models/hostel.model');
 const Room = require('../models/room.model');
 const User = require('../models/user.model');
 const Booking = require('../models/booking.model');
-const Favorite = require('../models/Favorite');
+
 // Create Hostel
 exports.createHostel = async (req, res) => {
     try {
@@ -59,42 +59,49 @@ exports.createHostel = async (req, res) => {
 };
 
 // Get All Hostels 
-
-
 exports.getHostels = async (req, res) => {
     try {
-        const userId = req.user.id; // Get user ID from token
-        const filters = req.query;
+        const { userId, isFavorite } = req.query; // Extract userId and isFavorite from query parameters
 
-        // Fetch all hostels
-        const hostels = await Hostel.find(filters).populate('host', 'name phone email');
+        let filters = {};
+
+        // If userId is provided, fetch hostels by userId
+        if (userId) {
+            filters.host = userId; // Assuming 'host' field stores the userId of the owner
+        }
+
+        // Fetch hostels based on filters
+        let hostels = await Hostel.find(filters).populate('host', 'name phone email');
 
         if (!hostels.length) {
             return res.status(404).json({ message: 'No hostels found.' });
         }
 
-        // Get the user's favorite hostels
-        const favoriteHostels = await Favorite.find({ user: userId }).select('hostel');
-        const favoriteHostelIds = favoriteHostels.map(fav => fav.hostel.toString());
+        // If checking favorite status, ensure userId is provided
+        if (isFavorite && userId) {
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found.' });
+            }
 
-        // Add isFavorite flag to hostels
-        const hostelsWithFavorites = hostels.map(hostel => ({
-            ...hostel.toObject(),
-            favorite: favoriteHostelIds.includes(hostel._id.toString())
-        }));
+            // Check if each hostel is marked as favorite by the user
+            hostels = hostels.map((hostel) => ({
+                ...hostel.toObject(),
+                isFavorite: user.favorites.includes(hostel._id), // Assuming 'favorites' is an array of hostel IDs in the User model
+            }));
+        }
 
         res.status(200).json({
             message: 'Hostels retrieved successfully.',
-            hostels: hostelsWithFavorites
+            hostels,
         });
     } catch (error) {
         res.status(500).json({
             message: 'An error occurred while fetching hostels.',
-            error: error.message
+            error: error.message,
         });
     }
 };
-
 
 exports.getHostListings = async (req, res) => {
     try {

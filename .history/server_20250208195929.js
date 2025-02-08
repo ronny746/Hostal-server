@@ -22,7 +22,7 @@ app.use('/api', require('./routes/pdfRoutes'));
 app.use('/api',  require('./routes/qrRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
-app.use('/api/favorites', require('./routes/favoriteRoutes'));
+app.use('/api/favorites', favoriteRoutes);
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

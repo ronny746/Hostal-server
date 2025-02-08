@@ -2,7 +2,7 @@ const Hostel = require('../models/hostel.model');
 const Room = require('../models/room.model');
 const User = require('../models/user.model');
 const Booking = require('../models/booking.model');
-const Favorite = require('../models/Favorite');
+
 // Create Hostel
 exports.createHostel = async (req, res) => {
     try {
@@ -80,7 +80,7 @@ exports.getHostels = async (req, res) => {
         // Add isFavorite flag to hostels
         const hostelsWithFavorites = hostels.map(hostel => ({
             ...hostel.toObject(),
-            favorite: favoriteHostelIds.includes(hostel._id.toString())
+            isFavorite: favoriteHostelIds.includes(hostel._id.toString())
         }));
 
         res.status(200).json({
