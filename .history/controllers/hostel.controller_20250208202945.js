@@ -89,7 +89,7 @@ exports.getHostels = async (req, res) => {
         // Add isFavorite flag to hostels
         const hostelsWithFavorites = hostels.map(hostel => ({
             ...hostel.toObject(),
-            favorite: favoriteHostelIds.includes(hostel._id.toString())
+            isFavorite: favoriteHostelIds.includes(hostel._id.toString())
         }));
 
         res.status(200).json({

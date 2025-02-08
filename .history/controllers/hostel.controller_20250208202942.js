@@ -61,7 +61,7 @@ exports.createHostel = async (req, res) => {
 // Get All Hostels 
 
 
-
+const Favorite = require('../models/Favorite');
 
 exports.getHostels = async (req, res) => {
     try {
@@ -89,7 +89,7 @@ exports.getHostels = async (req, res) => {
         // Add isFavorite flag to hostels
         const hostelsWithFavorites = hostels.map(hostel => ({
             ...hostel.toObject(),
-            favorite: favoriteHostelIds.includes(hostel._id.toString())
+            isFavorite: favoriteHostelIds.includes(hostel._id.toString())
         }));
 
         res.status(200).json({
