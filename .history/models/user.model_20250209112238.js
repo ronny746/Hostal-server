@@ -12,8 +12,8 @@ const UserSchema = new mongoose.Schema({
     adharBack:{type:String,required:false},
     panCard:{type:String,required:false},
     safetydescription:{type:String,required:false},
-    languages: { type: [String], default: [] },
-    position:{type:String,required:false},
+    language:{type:String,required:false},
+    panCard:{type:String,required:false},
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

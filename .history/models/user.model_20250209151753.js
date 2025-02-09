@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     adharBack:{type:String,required:false},
     panCard:{type:String,required:false},
     safetydescription:{type:String,required:false},
-    languages: { type: [String], default: [] },
+    language:{type:String,required:false},
     position:{type:String,required:false},
 }, { timestamps: true });
 

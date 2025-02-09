@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
     panCard:{type:String,required:false},
     safetydescription:{type:String,required:false},
     languages: { type: [String], default: [] },
+
     position:{type:String,required:false},
 }, { timestamps: true });
 

@@ -111,40 +111,6 @@ exports.getUsers = async (req, res) => {
 };
 
 // Update User
-exports.updateUser = async (req, res) => {
-    const { id } = req.params;
-    const { name, phone, email, dateOfBirth, address, isHost, adharFront, adharBack, panCard, safetyDescription, languages, position } = req.body;
-
-    try {
-        const user = await User.findById(id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Update fields only if provided in request body
-        user.name = name || user.name;
-        user.phone = phone || user.phone;
-        user.email = email || user.email;
-        user.dateOfBirth = dateOfBirth || user.dateOfBirth;
-        user.address = address || user.address;
-        user.isHost = isHost ?? user.isHost; // Use nullish coalescing (to allow false)
-        
-        // Host-related fields (only update if user is a host)
-        if (isHost) {
-            user.adharFront = adharFront || user.adharFront;
-            user.adharBack = adharBack || user.adharBack;
-            user.panCard = panCard || user.panCard;
-            user.safetyDescription = safetyDescription || user.safetyDescription;
-            user.languages = languages || user.languages; // Accept multiple languages
-            user.position = position || user.position;
-        }
-
-        await user.save();
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
 
 
 

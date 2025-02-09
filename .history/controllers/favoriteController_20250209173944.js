@@ -45,7 +45,7 @@ exports.getFavorites = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const favorites = await Favorite.find({ user: userId }).populate('hostel', 'title aboutThisPlace images')
+        const favorites = await Favorite.find({ user: userId }).
 
         res.status(200).json({ message: 'Favorites retrieved successfully', favorites });
     } catch (error) {

@@ -112,40 +112,42 @@ exports.getUsers = async (req, res) => {
 
 // Update User
 exports.updateUser = async (req, res) => {
-    const { id } = req.params;
-    const { name, phone, email, dateOfBirth, address, isHost, adharFront, adharBack, panCard, safetyDescription, languages, position } = req.body;
+    const { id } = req.params; // Extract user ID from route parameters
+    const { name, phone, email, dateOfBirth, address, isHost, adharFront, adharBack, panCard, safetyDescription, language, position } = req.body; 
 
     try {
+        // Find the user
         const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Update fields only if provided in request body
+        // Update common fields
         user.name = name || user.name;
         user.phone = phone || user.phone;
         user.email = email || user.email;
         user.dateOfBirth = dateOfBirth || user.dateOfBirth;
         user.address = address || user.address;
-        user.isHost = isHost ?? user.isHost; // Use nullish coalescing (to allow false)
-        
-        // Host-related fields (only update if user is a host)
+
+        // If `isHost` is being updated, set additional fields
         if (isHost) {
+            user.isHost = true;
             user.adharFront = adharFront || user.adharFront;
             user.adharBack = adharBack || user.adharBack;
             user.panCard = panCard || user.panCard;
             user.safetyDescription = safetyDescription || user.safetyDescription;
-            user.languages = languages || user.languages; // Accept multiple languages
+            user.language = language || user.language;
             user.position = position || user.position;
         }
 
-        await user.save();
-        res.status(200).json(user);
+        // Save the updated user
+        const updatedUser = await user.save();
+
+        res.status(200).json(updatedUser);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(400).json({ message: error.message });
     }
 };
-
 
 
 // Delete User
