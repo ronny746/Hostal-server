@@ -113,7 +113,7 @@ exports.getUsers = async (req, res) => {
 // Update User
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, phone, email, dateOfBirth, address, isHost, adharFront, adharBack, panCard, safetyDescription, languages, position, aboutMe } = req.body;
+    const { name, phone, email, dateOfBirth, address, isHost, adharFront, adharBack, panCard, safetyDescription, languages, position } = req.body;
 
     try {
         const user = await User.findById(id);
@@ -128,12 +128,12 @@ exports.updateUser = async (req, res) => {
         user.dateOfBirth = dateOfBirth || user.dateOfBirth;
         user.address = address || user.address;
         user.isHost = isHost ?? user.isHost; // Use nullish coalescing (to allow false)
-
+        
         // Host-related fields (only update if user is a host)
         if (isHost) {
             user.adharFront = adharFront || user.adharFront;
             user.adharBack = adharBack || user.adharBack;
-            user.aboutMe = aboutMe || user.aboutMe;
+            user.adharBack = adharBack || user.adharBack;
             user.panCard = panCard || user.panCard;
             user.safetyDescription = safetyDescription || user.safetyDescription;
             user.languages = languages || user.languages; // Accept multiple languages

@@ -133,7 +133,7 @@ exports.updateUser = async (req, res) => {
         if (isHost) {
             user.adharFront = adharFront || user.adharFront;
             user.adharBack = adharBack || user.adharBack;
-            user.aboutMe = aboutMe || user.aboutMe;
+            user.aboutMe = adharBack || user.aboutMe;
             user.panCard = panCard || user.panCard;
             user.safetyDescription = safetyDescription || user.safetyDescription;
             user.languages = languages || user.languages; // Accept multiple languages
