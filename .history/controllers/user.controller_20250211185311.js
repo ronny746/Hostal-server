@@ -116,7 +116,7 @@ exports.updateUser = async (req, res) => {
     const { 
         name, phone, email, dateOfBirth, address, isHost, 
         adharFront, adharBack, panCard, 
-         languages, position, aboutMe 
+        safetyDescription, languages, position, aboutMe 
     } = req.body;
 
     try {
@@ -134,6 +134,7 @@ exports.updateUser = async (req, res) => {
             address: address ?? user.address,
             isHost: isHost ?? user.isHost,
             aboutMe: aboutMe ?? user.aboutMe,
+            safetyDescription: safetyDescription ?? user.safetyDescription,
             position: position ?? user.position,
             languages: Array.isArray(languages) ? languages : user.languages, // Ensure it's an array
         });

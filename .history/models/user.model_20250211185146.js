@@ -9,9 +9,10 @@ const UserSchema = new mongoose.Schema(
         dateOfBirth: { type: Date, required: false }, // Optional date of birth
         address: { type: String, required: false }, // Optional address
         isHost: { type: Boolean, default: false }, // Indicate if the user is a host
+        safetydescription: { type: String, required: false },
         languages: { type: [String], default: [] },
         position: { type: String, required: false },
-        profileStatus: { type: Boolean, default: false },
+
         // Documents with Status
         adharFront: {
             file: { type: String, required: false }, // File URL

@@ -334,7 +334,7 @@ exports.searchHostels = async (req, res) => {
             filters['smokingZone'] = smokingAllowed === 'true';
         }
         if (petsAllowed !== undefined) {
-            filters['petsAllowed'] = petsAllowed === 'true';
+            filters['policies.petsAllowed'] = petsAllowed === 'true';
         }
 
         // Fetch hostels based on filters

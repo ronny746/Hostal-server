@@ -323,18 +323,18 @@ exports.searchHostels = async (req, res) => {
 
         // Address or city filter
         if (address) {
-            filters['address'] = { $regex: address, $options: 'i' };
+            filters['location.address'] = { $regex: address, $options: 'i' };
         }
         if (city) {
-            filters['city'] = { $regex: city, $options: 'i' };
+            filters['location.city'] = { $regex: city, $options: 'i' };
         }
 
         // Policy filters
         if (smokingAllowed !== undefined) {
-            filters['smokingZone'] = smokingAllowed === 'true';
+            filters['policies.smokingAllowed'] = smokingAllowed === 'true';
         }
         if (petsAllowed !== undefined) {
-            filters['petsAllowed'] = petsAllowed === 'true';
+            filters['policies.petsAllowed'] = petsAllowed === 'true';
         }
 
         // Fetch hostels based on filters

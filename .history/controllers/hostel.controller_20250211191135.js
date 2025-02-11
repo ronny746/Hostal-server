@@ -331,10 +331,10 @@ exports.searchHostels = async (req, res) => {
 
         // Policy filters
         if (smokingAllowed !== undefined) {
-            filters['smokingZone'] = smokingAllowed === 'true';
+            filters['policies.smokingAllowed'] = smokingAllowed === 'true';
         }
         if (petsAllowed !== undefined) {
-            filters['petsAllowed'] = petsAllowed === 'true';
+            filters['policies.petsAllowed'] = petsAllowed === 'true';
         }
 
         // Fetch hostels based on filters

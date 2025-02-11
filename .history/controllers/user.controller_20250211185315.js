@@ -116,7 +116,7 @@ exports.updateUser = async (req, res) => {
     const { 
         name, phone, email, dateOfBirth, address, isHost, 
         adharFront, adharBack, panCard, 
-         languages, position, aboutMe 
+        safetyDescription, languages, position, aboutMe 
     } = req.body;
 
     try {

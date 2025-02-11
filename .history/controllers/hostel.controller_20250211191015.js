@@ -285,10 +285,19 @@ exports.searchHostels = async (req, res) => {
             maxPrice,
             tags,
             facilities,
-            address,
+            keyword,
             city,
+            state,
+            onlyFor,
+            purpose,
+            occupancy,
+            ac,
+            mess,
+            laundry,
+            gym,
+            sharedSpace,
             smokingAllowed,
-            petsAllowed,
+            petsAllowed
         } = req.query;
 
         const filters = {};
@@ -303,9 +312,29 @@ exports.searchHostels = async (req, res) => {
             };
         }
 
+        // Keyword search in multiple fields
+        if (keyword) {
+            filters.$or = [
+                { title: { $regex: keyword, $options: 'i' } },
+                { streetAddress: { $regex: keyword, $options: 'i' } },
+                { nearbyLandmark: { $regex: keyword, $options: 'i' } },
+                { district: { $regex: keyword, $options: 'i' } },
+                { city: { $regex: keyword, $options: 'i' } },
+                { state: { $regex: keyword, $options: 'i' } },
+            ];
+        }
+
+        // City and State filters
+        if (city) {
+            filters['city'] = { $regex: city, $options: 'i' };
+        }
+        if (state) {
+            filters['state'] = { $regex: state, $options: 'i' };
+        }
+
         // Price range filter
         if (minPrice || maxPrice) {
-            filters['price.basePrice'] = {
+            filters['startingRate'] = {
                 ...(minPrice && { $gte: parseFloat(minPrice) }),
                 ...(maxPrice && { $lte: parseFloat(maxPrice) }),
             };
@@ -321,12 +350,36 @@ exports.searchHostels = async (req, res) => {
             filters['facilities'] = { $all: facilities.split(',') };
         }
 
-        // Address or city filter
-        if (address) {
-            filters['address'] = { $regex: address, $options: 'i' };
+        // Gender filter
+        if (onlyFor) {
+            filters['onlyFor'] = onlyFor;
         }
-        if (city) {
-            filters['city'] = { $regex: city, $options: 'i' };
+
+        // Purpose filter
+        if (purpose) {
+            filters['purpose'] = { $regex: purpose, $options: 'i' };
+        }
+
+        // Occupancy filter
+        if (occupancy) {
+            filters['guestType'] = { $regex: occupancy, $options: 'i' };
+        }
+
+        // Additional preferences
+        if (ac) {
+            filters['ac'] = ac;
+        }
+        if (mess !== undefined) {
+            filters['mess'] = mess === 'true';
+        }
+        if (laundry !== undefined) {
+            filters['laundry'] = laundry === 'true';
+        }
+        if (gym !== undefined) {
+            filters['gym'] = gym === 'true';
+        }
+        if (sharedSpace !== undefined) {
+            filters['sharedSpace'] = sharedSpace === 'true';
         }
 
         // Policy filters

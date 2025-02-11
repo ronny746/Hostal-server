@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema(
         isHost: { type: Boolean, default: false }, // Indicate if the user is a host
         languages: { type: [String], default: [] },
         position: { type: String, required: false },
-        profileStatus: { type: Boolean, default: false },
+
         // Documents with Status
         adharFront: {
             file: { type: String, required: false }, // File URL
