@@ -4,26 +4,26 @@ const UserSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
         phone: { type: String, required: true, unique: true },
-        email: { type: String, required: false, unique: true },
+        email: { type: String, required: true, unique: true },
         dateOfBirth: { type: Date },
         address: { type: String },
         isHost: { type: Boolean, default: false },
-        profileStatus: { type: Boolean, default: false },
-
+        isVerified: { type: Boolean, default: false },
+    
         // Default values for documents
-        adharFront: {
+        adharFront: { 
             file: { type: String, default: '' },
             status: { type: String, default: 'pending' }
         },
-        adharBack: {
+        adharBack: { 
             file: { type: String, default: '' },
             status: { type: String, default: 'pending' }
         },
-        panCard: {
+        panCard: { 
             file: { type: String, default: '' },
             status: { type: String, default: 'pending' }
         },
-
+    
         languages: { type: [String], default: [] },
         position: { type: String, default: '' },
         aboutMe: { type: String, default: '' }

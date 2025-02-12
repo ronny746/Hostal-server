@@ -104,19 +104,12 @@ exports.verifyOTP = async (req, res) => {
 exports.getUsers = async (req, res) => {
     try {
         const users = await User.find();
-
-        // Get default schema fields
-        const defaultUser = new User().toObject();
-
-        // Ensure all users have the required fields
-        const updatedUsers = users.map(user => ({ ...defaultUser, ...user.toObject() }));
-
-        res.status(200).json(updatedUsers);
+        
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // Update User
 exports.updateUser = async (req, res) => {
@@ -185,18 +178,11 @@ exports.getUserById = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Get default schema fields
-        const defaultUser = new User().toObject();
-
-        // Ensure user has all required fields
-        const updatedUser = { ...defaultUser, ...user.toObject() };
-
-        res.status(200).json(updatedUser);
+        res.status(200).json(user); // Send the user data in response
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // Login User
 

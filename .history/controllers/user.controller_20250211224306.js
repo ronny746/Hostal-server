@@ -185,18 +185,11 @@ exports.getUserById = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Get default schema fields
-        const defaultUser = new User().toObject();
-
-        // Ensure user has all required fields
-        const updatedUser = { ...defaultUser, ...user.toObject() };
-
-        res.status(200).json(updatedUser);
+        res.status(200).json(user); // Send the user data in response
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
 
 // Login User
 
