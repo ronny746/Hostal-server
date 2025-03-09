@@ -2,7 +2,7 @@ exports.getAppDetails = async (req, res) => {
     try {
         const appDetails = {
             appName: "Hostalio",
-            version: "1.0.3",
+            version: "1.0.5",
             developer: {
                 name: "Rohit Rana",
                 email: "rana@example.com",
