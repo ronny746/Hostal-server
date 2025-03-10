@@ -59,29 +59,132 @@ exports.createHostel = async (req, res) => {
 };
 
 // Get All Hostels 
+// exports.getHostels = async (req, res) => {
+//     try {
+//         const filters = {};
 
+//         // Dynamically add filters based on request query
+//         Object.keys(req.query).forEach((key) => {
+//             if (req.query[key] !== undefined) {
+//                 let value = req.query[key];
 
+//                 // Convert boolean strings to actual boolean values
+//                 if (value === 'true') value = true;
+//                 if (value === 'false') value = false;
 
+//                 filters[key] = value;
+//             }
+//         });
+
+//         // Fetch hostels based on filters
+//         const hostels = await Hostel.find(filters).populate('host', 'name phone email');
+
+//         if (!hostels.length) {
+//             return res.status(404).json({ message: 'No hostels found.' });
+//         }
+
+//         // Check if user is authenticated (token exists)
+//         if (!req.user) {
+//             return res.status(200).json({
+//                 message: 'Hostels retrieved successfully.',
+//                 hostels // No isFavorite flag for guests
+//             });
+//         }
+
+//         const userId = req.user.id;
+
+//         // Get user's favorite hostels
+//         const favoriteHostels = await Favorite.find({ user: userId }).select('hostel');
+//         const favoriteHostelIds = favoriteHostels.map(fav => fav.hostel.toString());
+
+//         // Add isFavorite flag to hostels
+//         const hostelsWithFavorites = hostels.map(hostel => ({
+//             ...hostel.toObject(),
+//             favorite: favoriteHostelIds.includes(hostel._id.toString())
+//         }));
+
+//         res.status(200).json({
+//             message: 'Hostels retrieved successfully.',
+//             hostels: hostelsWithFavorites
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             message: 'An error occurred while fetching hostels.',
+//             error: error.message
+//         });
+//     }
+// };
 
 exports.getHostels = async (req, res) => {
     try {
         const filters = {};
 
-        // Dynamically add filters based on request query
+        // Allowed filter fields (matching schema exactly)
+        const allowedFilters = {
+            ac: 'boolean',
+            mess: 'boolean',
+            laundry: 'boolean',
+            gym: 'boolean',
+            city: 'string',
+            state: 'string',
+            hostelType: ['Hostel', 'PG', 'Guest House', 'House', '1 RK', '1 BHK', '2 BHK', '3 BHK', 'Resort'],
+            onlyFor: ['Male', 'Female', 'Both'],
+            guestType: ['Students', 'Family', 'Corporate Visitors', 'Stay for all'],
+            smokingZone: 'boolean', // Corrected from smokingAllowed
+            petsAllowed: 'boolean',
+            purpose: 'string'
+        };
+
+        // Apply filters dynamically based on allowed fields
         Object.keys(req.query).forEach((key) => {
-            if (req.query[key] !== undefined) {
+            if (allowedFilters[key]) {
                 let value = req.query[key];
 
                 // Convert boolean strings to actual boolean values
-                if (value === 'true') value = true;
-                if (value === 'false') value = false;
+                if (allowedFilters[key] === 'boolean') {
+                    value = value === 'true';
+                }
 
-                filters[key] = value;
+                // Handle AC filtering logic
+                if (key === 'ac') {
+                    if (value === true) {
+                        filters[key] = { $in: ['AC', 'Both'] };
+                    } else if (value === false) {
+                        filters[key] = { $eq: 'Non AC' };
+                    }
+                } else {
+                    // Validate enum values
+                    if (Array.isArray(allowedFilters[key]) && !allowedFilters[key].includes(value)) {
+                        return res.status(400).json({ message: `Invalid value '${value}' for filter '${key}'. Allowed: ${allowedFilters[key].join(', ')}` });
+                    }
+                    filters[key] = value;
+                }
+            } else {
+                console.warn(`Unsupported filter key: ${key}`); // Log unexpected keys
             }
         });
 
-        // Fetch hostels based on filters
-        const hostels = await Hostel.find(filters).populate('host', 'name phone email');
+        let hostelsQuery = Hostel.find(filters).populate('host', 'name phone email');
+
+        // Check if occupancy (roomType) filter is provided
+        if (req.query.occupancy) {
+            const roomTypeFilter = req.query.occupancy;
+
+            // Find hostels that have rooms matching the roomType
+            const matchingRooms = await Room.find({ roomType: roomTypeFilter }).select('hostal');
+
+            if (matchingRooms.length === 0) {
+                return res.status(404).json({ message: 'No hostels found with the given room type.' });
+            }
+
+            // Extract unique hostel IDs from matching rooms
+            const hostelIds = matchingRooms.map(room => room.hostal.toString());
+
+            // Modify the hostel query to filter based on found hostel IDs
+            hostelsQuery = hostelsQuery.where('_id').in(hostelIds);
+        }
+
+        const hostels = await hostelsQuery;
 
         if (!hostels.length) {
             return res.status(404).json({ message: 'No hostels found.' });
@@ -118,9 +221,6 @@ exports.getHostels = async (req, res) => {
         });
     }
 };
-
-
-
 
 exports.getHostListings = async (req, res) => {
     try {
