@@ -154,14 +154,13 @@ exports.updateUser = async (req, res) => {
             user.profileStatus = true;
         }
         await user.save();
-        res.status(200).json(user);
+        res.status(200).json({
+            message: 'User updated successfully.',
+            user});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
-
-
 
 // Delete User
 exports.deleteUser = async (req, res) => {
