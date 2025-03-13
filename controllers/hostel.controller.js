@@ -20,6 +20,16 @@ exports.createHostel = async (req, res) => {
             !predefinedRules.some(preRule => preRule.title === rule.title)
         )];
 
+         // Validate required fields
+         if (!hostelData.title || !hostelData.hostelType || !hostelData.guestType || !hostelData.roomIn) {
+            return res.status(400).json({ message: "Missing required fields: title, hostelType, guestType, or roomIn." });
+        }
+
+        // Validate host field
+        if (!mongoose.Types.ObjectId.isValid(host)) {
+            return res.status(400).json({ message: "Invalid host ID." });
+        }
+
         const user = await User.findById(hostelData.host);
         if (!user || !user.isHost) {
             return res.status(403).json({
@@ -51,8 +61,9 @@ exports.createHostel = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            message: 'Failed to create hostel. Please check the input data.',
+          console.error("Error creating hostel:", error);
+        res.status(500).json({
+            message: 'Internal server error. Please try again later.',
             error: error.message,
         });
     }
