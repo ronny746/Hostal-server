@@ -25,11 +25,6 @@ exports.createHostel = async (req, res) => {
             return res.status(400).json({ message: "Missing required fields: title, hostelType, guestType, or roomIn." });
         }
 
-        // Validate host field
-        if (!mongoose.Types.ObjectId.isValid(host)) {
-            return res.status(400).json({ message: "Invalid host ID." });
-        }
-
         const user = await User.findById(hostelData.host);
         if (!user || !user.isHost) {
             return res.status(403).json({
