@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema(
         email: { type: String, required: false, unique: true },
         dateOfBirth: { type: Date },
         address: { type: String },
+        profilePic: { type: String },
         isHost: { type: Boolean, default: false },
         profileStatus: { type: Boolean, default: false },
 

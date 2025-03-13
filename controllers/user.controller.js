@@ -122,7 +122,7 @@ exports.getUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const {
-        name, phone, email, dateOfBirth, address, isHost,
+        name, phone, email, dateOfBirth, address, profilePic, isHost, 
         adharFront, adharBack, panCard,
         languages, position, aboutMe
     } = req.body;
@@ -140,6 +140,7 @@ exports.updateUser = async (req, res) => {
             email: email ?? user.email,
             dateOfBirth: dateOfBirth ?? user.dateOfBirth,
             address: address ?? user.address,
+            profilePic: profilePic ?? user.profilePic,
             isHost: isHost ?? user.isHost,
             aboutMe: aboutMe ?? user.aboutMe,
             position: position ?? user.position,
@@ -159,6 +160,53 @@ exports.updateUser = async (req, res) => {
             user});
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+exports.verifyUserDocuments = async (req, res) => {
+    const { id } = req.params;
+    const documentStatus = req.body; // Expect key-value pairs like { "adharFront": "Verified", "panCard": "Rejected" }
+
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Ensure there is at least one document status update
+        if (!documentStatus || Object.keys(documentStatus).length === 0) {
+            return res.status(400).json({ message: 'Please provide at least one document status.' });
+        }
+
+        // Allowed document fields
+        const allowedDocuments = ["adharFront", "adharBack", "panCard"];
+
+        // Update each document's status
+        Object.keys(documentStatus).forEach((doc) => {
+            if (allowedDocuments.includes(doc) && user[doc]) {
+                user[doc].status = documentStatus[doc];
+            }
+        });
+
+        // Check if all required documents are verified
+        if (
+            user.panCard?.status === 'Verified' &&
+            user.adharBack?.status === 'Verified' &&
+            user.adharFront?.status === 'Verified'
+        ) {
+            user.profileStatus = true;
+        } else {
+            user.profileStatus = false;
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            message: 'User documents updated successfully.',
+            user
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'An error occurred while verifying user documents.', error: error.message });
     }
 };
 
