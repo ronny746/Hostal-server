@@ -91,7 +91,7 @@ exports.getRoomsByHostelId = async (req, res) => {
     try {
         const { hostelId, fromDate, toDate } = req.body;
 
-        const hostel = await Hostel.findById(hostelId);
+        const hostel = await Hostel.findById(hostelId).populate('host', 'name phone email');
         if (!hostel) {
             return res.status(404).json({
                 message: 'Hostel not found.',
