@@ -78,7 +78,6 @@ exports.verifyOTP = async (req, res) => {
         const token = jwt.sign(
             { id: user._id, phone: user.phone },
             'hostal', // Use a secure secret
-            { expiresIn: '1d' }
         );
 
         // Clean up OTP
