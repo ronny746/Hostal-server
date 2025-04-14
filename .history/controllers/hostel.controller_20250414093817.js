@@ -4,7 +4,9 @@ const User = require('../models/user.model');
 const Booking = require('../models/booking.model');
 const Favorite = require('../models/Favorite');
 // Create Hostel
-
+const Hostel = require('../models/Hostel'); // adjust paths as needed
+const Room = require('../models/Room');
+const User = require('../models/User');
 
 exports.createHostel = async (req, res) => {
     try {
